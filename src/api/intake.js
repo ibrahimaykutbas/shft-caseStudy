@@ -11,19 +11,19 @@ const getIntakes = async () => {
 };
 
 const getIntake = async id => {
-  return await client.get(`/intake/:${id}`);
+  return await client.get(`intake/:${id}`);
 };
 
 const createIntake = async data => {
-  return await client.post('/intake', data);
+  return await client.post('intake', data);
 };
 
 const updateIntake = async (id, data) => {
-  return await client.put(`/intake/:${id}`, data);
+  return await client.put(`intake/${id}`, data);
 };
 
 const deleteIntake = async id => {
-  return await client.delete(`/intake/:${id}`);
+  return await client.delete(`intake/${id}`);
 };
 
 export default {
