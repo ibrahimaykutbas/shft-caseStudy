@@ -13,12 +13,23 @@ export default StyleSheet.create({
     borderTopStartRadius: height / 30,
     borderTopEndRadius: height / 30,
   },
-  line:{
+  line: {
     width: width / 3,
     height: height / 100,
     backgroundColor: colors.WHITE,
-    marginTop: height / 50,
+    marginVertical: height / 50,
     borderRadius: height / 100,
-    alignSelf: 'center',
+    alignSelf: 'center'
+  },
+  intakeContainer: {
+    height: height / 20,
+    backgroundColor: colors.WHITE,
+    flexDirection: 'row',
+    marginHorizontal: width / 20,
+    marginBottom: height / 50,
+    borderRadius: height / 150,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: width / 20
   }
 });
