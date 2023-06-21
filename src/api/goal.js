@@ -7,5 +7,9 @@ const client = create({
 });
 
 const getGoal = async id => {
-  return await client.get(`/goal/:${id}`);
+  return await client.get(`/goal/${id}`);
+};
+
+export default {
+  getGoal
 };

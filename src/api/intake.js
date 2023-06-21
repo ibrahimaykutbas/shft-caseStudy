@@ -14,8 +14,8 @@ const getIntake = async id => {
   return await client.get(`intake/:${id}`);
 };
 
-const createIntake = async data => {
-  return await client.post('intake', data);
+const createIntake = async amount => {
+  return await client.post('intake/', { amount });
 };
 
 const updateIntake = async (id, data) => {
