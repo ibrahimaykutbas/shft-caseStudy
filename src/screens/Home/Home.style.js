@@ -9,6 +9,7 @@ export default StyleSheet.create({
     backgroundColor: colors.WHITE
   },
   menu: {
+    marginTop: height / 70,
     marginRight: height / 50,
     alignSelf: 'flex-end'
   }

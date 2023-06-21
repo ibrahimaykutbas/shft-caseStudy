@@ -10,10 +10,11 @@ import goalApi from '../../api/goal';
 
 import CircularProgress from '../../components/CircularProgress/CircularProgress';
 import Intakes from '../../components/Intakes/Intakes';
+import ActivityIndicator from '../../components/ActivityIndicator/ActivityIndicator';
 
 import { Menu } from '../../assets/svgs';
 
-const Home = () => {
+const Home = ({ navigation }) => {
   const [intakes, setIntakes] = useState([]);
   const [goal, setGoal] = useState({});
 
@@ -53,18 +54,18 @@ const Home = () => {
     } catch (error) {}
   };
 
-  const addIntake = async data => {
+  const addIntake = async amount => {
     try {
-      const response = await addIntakeApi.request(data);
+      const response = await addIntakeApi.request(amount);
       if (response.status != 201) return;
 
       getIntakes();
     } catch (error) {}
   }
 
-  const updateIntake = async (id, data) => {
+  const updateIntake = async (id, amount) => {
     try {
-      const response = await updateIntakeApi.request(id, data);
+      const response = await updateIntakeApi.request(id, amount);
       if (response.status !== 200) return;
 
       getIntakes();
@@ -81,16 +82,20 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <>
+      <ActivityIndicator visible={getIntakesApi.loading || getGoalApi.loading} />
+
+      <SafeAreaView style={styles.container}>
       <Pressable
         style={styles.menu}
-        onPress={() => console.log('Menu clicked')}>
+        onPress={() => navigation.navigate("Goal")}>
         <Menu width={height / 30} height={height / 30} />
       </Pressable>
       <CircularProgress intakes={intakes} goal={goal} />
 
       <Intakes intakes={intakes} addIntake={addIntake} updateIntake={updateIntake} deleteIntake={deleteIntake} />
     </SafeAreaView>
+    </>
   );
 };
 
