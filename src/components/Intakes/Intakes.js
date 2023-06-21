@@ -2,6 +2,7 @@ import { View, Text, FlatList, Pressable, PanResponder, Animated } from 'react-n
 import React, { useState, useEffect, useRef } from 'react';
 
 import { height } from '../../theme/units';
+import { colors } from '../../theme/colors';
 import styles from './Intakes.style';
 
 import { groupDataByType } from '../../utils/groupDataByType';
@@ -40,7 +41,7 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
 
   // Animasyonlu büyüme işlemini gerçekleştirmek için Animated kullanımı
   Animated.timing(containerHeight, {
-    toValue: expanded ? height / 1.2 : height / 2.7,
+    toValue: expanded ? height / 1.2 : height / 2.3,
     duration: 150,
     useNativeDriver: false,
   }).start();
@@ -57,7 +58,12 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
   useEffect(() => {
     if(intakes.length > 0){
       const filteredData = groupDataByType(intakes, filterType);
-      setData(filteredData);
+      
+      let sortedIntakes = filteredData?.sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      setData(sortedIntakes);
     }
   },[intakes, filterType])
 
@@ -76,8 +82,8 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
           setAddVisible(false);
           setValue('');
         }} />
-        <Dialog.Button label="Save" onPress={() => {          
-          addIntake(parseInt(value));
+        <Dialog.Button label="Save" onPress={() => {    
+          addIntake(value);
           setAddVisible(false);
           setValue('');
         }} />
@@ -123,11 +129,7 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
           setValue('');
         }} />
         <Dialog.Button label="Save" onPress={() => {
-          // Veri güncelleniyor diye gözüküyor fakat yeniden başlatınca eski haline dönüyor.
-          // Ama manuel olarak güncellersem sorun olmuyor?
-          let coppyData = selectedData;
-          coppyData.amount = value;
-          updateIntake(selectedData?.id, coppyData);
+          updateIntake(selectedData?.id, value);
           setUpdateVisible(false);
           setValue('');
         }} />
@@ -136,11 +138,10 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
   }
 
   const renderItem = ({ item }) => {
-    let parseDate =  filterType == "daily" && item?.createdAt.split('T')
-
-    /*
-      {parseDate[1].slice(0, 5)} 
-     */
+    let newDate = new Date(item?.createdAt);
+    let parseTime = newDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    let parseDate = newDate.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    
     return (
       <Pressable style={styles.intakeContainer} onLongPress={() => {
         setOperationVisible(true);
@@ -148,7 +149,7 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
       }} >
         <Text> {item?.amount} {item?.unit} </Text>
         {
-          filterType == "daily" ? <Text> / {parseDate[0]} </Text> : <Text> {item?.createdAt} </Text>
+          filterType == "daily" ? <Text> {`${parseTime} / ${parseDate}`} </Text> : <Text> {item?.createdAt} </Text>
         }
       </Pressable>
     );
@@ -156,12 +157,14 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
 
   return (
     <>
-      <Pressable onPress={() => setAddVisible(true)}>
-        <Add width={height / 15} height={height / 15} style={styles.add} />
-      </Pressable>
+      
     
       <Animated.View style={[styles.container, { height: containerHeight }]} {...panResponder.panHandlers}>
         <View style={styles.line} />
+
+        <Pressable style={styles.addButton} onPress={() => setAddVisible(true)}>
+          <Add width={height / 22} height={height / 22} style={styles.add} fill={colors.WHITE} />
+        </Pressable> 
 
         <FlatList data={data} renderItem={renderItem} onScroll={handleScroll}/>
 

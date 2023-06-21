@@ -32,6 +32,11 @@ export default StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: width / 20
   },
+  addButton:{
+    width: width / 5,
+    alignSelf: 'flex-end',
+    marginTop: -height / 18,
+  },
   add:{
     alignSelf: 'center',
     marginVertical: height / 100,

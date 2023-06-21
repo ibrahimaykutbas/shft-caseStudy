@@ -21,13 +21,13 @@ const CircularProgress = ({ intakes, goal }) => {
 
   useEffect(() => {
     let _goal = filterType === 'daily' ? goal?.dailyGoal : filterType === 'weekly' ? goal?.weeklyGoal : goal?.monthlyGoal;
-    let totalIntake = intakes?.reduce((total, intake) => { return total + intake.amount }, 0);
+    let totalIntake = intakes?.reduce((total, intake) => { return Number(total) + Number(intake.amount) }, 0);
 
     let result = totalIntake / _goal * 100
 
     !Number.isNaN(_goal) && setGoalAmount(_goal);
     !Number.isNaN(totalIntake) && setTotalIntake(totalIntake);
-    !Number.isNaN(result) && setPercent(result);
+    !Number.isNaN(result) && setPercent(result > 100 ? 100 : result);
 
   },[intakes, goal, filterType])
 
@@ -42,9 +42,8 @@ const CircularProgress = ({ intakes, goal }) => {
         prefill={100}
         fillLineCap='round'
         rotation={0}
-        tintColor={colors.POWDER_BLUE}
-        onAnimationComplete={() => console.log('onAnimationComplete')}
-        backgroundColor="#3d5875">
+        tintColor={colors.TURQUOISE}
+        backgroundColor={colors.POWDER_BLUE}>
         {fill => (
           <View style={styles.circle}>
             <Text style={styles.percent}>{fill.toFixed(0)}%</Text>

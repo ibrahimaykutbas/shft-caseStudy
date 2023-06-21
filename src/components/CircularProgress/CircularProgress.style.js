@@ -44,17 +44,20 @@ export default StyleSheet.create({
     borderRadius: height / 45,
     borderColor: colors.BLACK,
     borderWidth: height / 1000,
-    marginBottom: height / 200
+    marginBottom: height / 200,
   },
   activeChoose: {
-    borderWidth: height / 250
+    borderColor: colors.CORAL,
+    borderWidth: height / 250,
   },
   labelText: {
     fontSize: 15,
-    fontWeight: '500'
+    fontWeight: '500',
+    color: colors.BLACK,
   },
   activeLabelText: {
     fontSize: 15,
-    fontWeight: '700'
+    fontWeight: '700',
+    color: colors.CORAL,
   }
 });
