@@ -54,7 +54,7 @@ export const groupDataByType = (intakes, type) => {
   
       intakes.forEach((item) => {
         const createdAt = new Date(item.createdAt);
-        const monthYear = `${createdAt.toLocaleString('default', { month: 'long' })} ${createdAt.getFullYear()}`;
+        const monthYear = `${createdAt.toLocaleString('en-US', { month: 'long' })} ${createdAt.getFullYear()}`;
   
         if (!monthlyData[monthYear]) {
           monthlyData[monthYear] = {
