@@ -31,5 +31,9 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: width / 20
+  },
+  add:{
+    alignSelf: 'center',
+    marginVertical: height / 100,
   }
 });

@@ -7,7 +7,7 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     alignSelf: 'center',
-    marginTop: height / 20
+    marginTop: height / 50
   },
   circle: {
     justifyContent: 'center',
@@ -22,7 +22,7 @@ export default StyleSheet.create({
     fontWeight: '600'
   },
   line: {
-    height: height * 0.0015,
+    height: height * 0.0009,
     backgroundColor: colors.BLACK,
     marginTop: height / 2.8,
     marginHorizontal: height / 20
@@ -30,9 +30,10 @@ export default StyleSheet.create({
   labels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: height / 12
+    marginHorizontal: height / 15,
   },
   label: {
+    width: height / 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: height / 100
@@ -42,11 +43,11 @@ export default StyleSheet.create({
     height: height / 45,
     borderRadius: height / 45,
     borderColor: colors.BLACK,
-    borderWidth: height / 500,
+    borderWidth: height / 1000,
     marginBottom: height / 200
   },
   activeChoose: {
-    borderWidth: height / 150
+    borderWidth: height / 250
   },
   labelText: {
     fontSize: 15,

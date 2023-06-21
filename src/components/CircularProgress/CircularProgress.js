@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState ,useEffect } from 'react';
 
 import { width, height } from '../../theme/units';
 import { colors } from '../../theme/colors';
@@ -7,8 +7,29 @@ import styles from './CircularProgress.style';
 
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
-const CircularProgress = () => {
-  const [type, setType] = useState('daily');
+import { useSelector, useDispatch } from 'react-redux';
+import { setFilterType } from '../../redux/dataProcess';
+
+const CircularProgress = ({ intakes, goal }) => {
+  const dispatch = useDispatch();
+
+  const [goalAmount, setGoalAmount] = useState(0);
+  const [totalIntake, setTotalIntake] = useState([]);
+  const [percent, setPercent] = useState(0);
+
+  const { filterType } = useSelector(state => state.dataProcess);
+
+  useEffect(() => {
+    let _goal = filterType === 'daily' ? goal?.dailyGoal : filterType === 'weekly' ? goal?.weeklyGoal : goal?.monthlyGoal;
+    let totalIntake = intakes?.reduce((total, intake) => { return total + intake.amount }, 0);
+
+    let result = totalIntake / _goal * 100
+
+    !Number.isNaN(_goal) && setGoalAmount(_goal);
+    !Number.isNaN(totalIntake) && setTotalIntake(totalIntake);
+    !Number.isNaN(result) && setPercent(result);
+
+  },[intakes, goal, filterType])
 
   return (
     <View>
@@ -16,14 +37,18 @@ const CircularProgress = () => {
         style={styles.container}
         size={height / 3}
         width={height * 0.05}
-        fill={90}
+        fill={Number(percent.toFixed(0))}
+        lineCap='round'
+        prefill={100}
+        fillLineCap='round'
+        rotation={0}
         tintColor={colors.POWDER_BLUE}
         onAnimationComplete={() => console.log('onAnimationComplete')}
         backgroundColor="#3d5875">
         {fill => (
           <View style={styles.circle}>
-            <Text style={styles.percent}>{fill}%</Text>
-            <Text style={styles.info}> 700 / 1850 ml</Text>
+            <Text style={styles.percent}>{fill.toFixed(0)}%</Text>
+            <Text style={styles.info}> {totalIntake} / {goalAmount} ml</Text>
           </View>
         )}
       </AnimatedCircularProgress>
@@ -31,19 +56,19 @@ const CircularProgress = () => {
       <View style={styles.line} />
 
       <View style={styles.labels}>
-        <Pressable style={styles.label} onPress={() => setType('daily')}>
-          <View style={[ styles.choose, type === 'daily' ? styles.activeChoose : '' ]} />
-          <Text style={[ styles.labelText, type === "daily" ? styles.activeLabelText : '' ]}>Daily</Text>
+        <Pressable style={styles.label} onPress={() => dispatch(setFilterType("daily"))}>
+          <View style={[ styles.choose, filterType === 'daily' ? styles.activeChoose : '' ]} />
+          <Text style={[ styles.labelText, filterType === "daily" ? styles.activeLabelText : '' ]}>Daily</Text>
         </Pressable>
 
-        <Pressable style={styles.label} onPress={() => setType('weekly')}>
-          <View style={[ styles.choose, type === 'weekly' ? styles.activeChoose : '' ]} />
-          <Text style={[ styles.labelText, type === "weekly" ? styles.activeLabelText : '' ]}>Weekly</Text>
+        <Pressable style={styles.label} onPress={() => dispatch(setFilterType("weekly"))}>
+          <View style={[ styles.choose, filterType === 'weekly' ? styles.activeChoose : '' ]} />
+          <Text style={[ styles.labelText, filterType === "weekly" ? styles.activeLabelText : '' ]}>Weekly</Text>
         </Pressable>
 
-        <Pressable style={styles.label} onPress={() => setType('monthly')}>
-          <View style={[ styles.choose, type === 'monthly' ? styles.activeChoose : '' ]} />
-          <Text style={[ styles.labelText, type === "monthly" ? styles.activeLabelText : '' ]}>Monthly</Text>
+        <Pressable style={styles.label} onPress={() =>  dispatch(setFilterType("monthly"))}>
+          <View style={[ styles.choose, filterType === 'monthly' ? styles.activeChoose : '' ]} />
+          <Text style={[ styles.labelText, filterType === "monthly" ? styles.activeLabelText : '' ]}>Monthly</Text>
         </Pressable>
       </View>
     </View>

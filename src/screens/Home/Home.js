@@ -6,6 +6,7 @@ import styles from './Home.style';
 
 import useApi from '../../hooks/useApi';
 import intakeApi from '../../api/intake';
+import goalApi from '../../api/goal';
 
 import CircularProgress from '../../components/CircularProgress/CircularProgress';
 import Intakes from '../../components/Intakes/Intakes';
@@ -14,13 +15,30 @@ import { Menu } from '../../assets/svgs';
 
 const Home = () => {
   const [intakes, setIntakes] = useState([]);
+  const [goal, setGoal] = useState({});
+
+  // Intake API
   const getIntakesApi = useApi(intakeApi.getIntakes);
+  const addIntakeApi = useApi(intakeApi.createIntake);
   const updateIntakeApi = useApi(intakeApi.updateIntake);
   const deleteIntakeApi = useApi(intakeApi.deleteIntake);
 
+  // Goal API
+  const getGoalApi = useApi(goalApi.getGoal);
+
   useEffect(() => {
     getIntakes();
+    getGoal();
   }, []);
+
+  const getGoal = async () => {
+    try {
+      const response = await getGoalApi.request(1);
+      if (response.status !== 200) return;
+
+      setGoal(response.data);
+    } catch (error) {}
+  }
 
   const getIntakes = async () => {
     try {
@@ -34,6 +52,15 @@ const Home = () => {
       setIntakes(sortedIntakes);
     } catch (error) {}
   };
+
+  const addIntake = async data => {
+    try {
+      const response = await addIntakeApi.request(data);
+      if (response.status != 201) return;
+
+      getIntakes();
+    } catch (error) {}
+  }
 
   const updateIntake = async (id, data) => {
     try {
@@ -60,9 +87,9 @@ const Home = () => {
         onPress={() => console.log('Menu clicked')}>
         <Menu width={height / 30} height={height / 30} />
       </Pressable>
-      <CircularProgress />
+      <CircularProgress intakes={intakes} goal={goal} />
 
-      <Intakes intakes={intakes} updateIntake={updateIntake} deleteIntake={deleteIntake} />
+      <Intakes intakes={intakes} addIntake={addIntake} updateIntake={updateIntake} deleteIntake={deleteIntake} />
     </SafeAreaView>
   );
 };

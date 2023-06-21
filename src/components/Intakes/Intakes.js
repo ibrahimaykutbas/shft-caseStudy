@@ -1,18 +1,28 @@
-import { View, Text, FlatList, Pressable, Alert, PanResponder, Animated } from 'react-native';
+import { View, Text, FlatList, Pressable, PanResponder, Animated } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 
 import { height } from '../../theme/units';
 import styles from './Intakes.style';
 
+import { groupDataByType } from '../../utils/groupDataByType';
+
+import { useSelector } from 'react-redux';
+
 import Dialog from "react-native-dialog";
 
-const Intakes = ({ intakes, updateIntake, deleteIntake }) => {
+import { Add } from '../../assets/svgs';
+
+const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
+  const [data, setData] = useState([]);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [addVisible, setAddVisible] = useState(false);
   const [operationVisible, setOperationVisible] = useState(false);
   const [updateVisible, setUpdateVisible] = useState(false);
   const [selectedData, setSelectedData] = useState({});
   const [value, setValue] = useState('');
+
+  const { filterType } = useSelector(state => state.dataProcess);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -44,67 +54,36 @@ const Intakes = ({ intakes, updateIntake, deleteIntake }) => {
     if (scrollOffset > 200) return setExpanded(true);
   }, [scrollOffset]);
 
-  const openAlert = (id) => {
-    Alert.alert(
-      "Title",
-      "Description of the alert",
-      [
-        {
-          text: 'Update',
-          onPress: () => setModalVisible(true),
-        },
-        {
-          text: 'Delete',
-          onPress: () => deleteIntake(id),
-        }
-      ]
+  useEffect(() => {
+    if(intakes.length > 0){
+      const filteredData = groupDataByType(intakes, filterType);
+      setData(filteredData);
+    }
+  },[intakes, filterType])
+
+  // Ekleme işlemini yapacak alert
+  const addWater = () => {
+    return (
+      <Dialog.Container visible={addVisible}>
+        <Dialog.Title>Add Intake</Dialog.Title>
+        <Dialog.Description>
+          Please enter the amount of water you drink.
+        </Dialog.Description>
+
+        <Dialog.Input value={value} onChangeText={text => setValue(text)}  placeholder='250' autoFocus={true} keyboardType='numeric' />
+
+        <Dialog.Button label="Cancel" onPress={() => {
+          setAddVisible(false);
+          setValue('');
+        }} />
+        <Dialog.Button label="Save" onPress={() => {          
+          addIntake(parseInt(value));
+          setAddVisible(false);
+          setValue('');
+        }} />
+      </Dialog.Container>
     )
   }
-
-  // Günlük - Haftalık - Aylık olarak gruplama işlemini gerçekleştirmek için
-  const groupDataByType = (type) => {
-    const groupedData = {};
-  
-    intakes.forEach((item) => {
-      const createdAt = new Date(item.createdAt);
-      let key;
-  
-      if (type === 'daily') {
-        key = createdAt.toLocaleDateString();
-      } else if (type === 'weekly') {
-        const firstDayOfWeek = new Date(createdAt.setDate(createdAt.getDate() - createdAt.getDay()));
-        const lastDayOfWeek = new Date(createdAt.setDate(createdAt.getDate() - createdAt.getDay() + 6));
-        key = `${firstDayOfWeek.toLocaleDateString()} - ${lastDayOfWeek.toLocaleDateString()}`;
-      } else if (type === 'monthly') {
-        key = createdAt.toLocaleString('default', { month: 'long', year: 'numeric' });
-      }
-  
-      if (!groupedData[key]) {
-        groupedData[key] = [];
-      }
-  
-      groupedData[key].push(item);
-    });
-  
-    return groupedData;
-  };
-
-/*   const dailyData = groupDataByType('monthly');
-  console.log('Günlük Gruplama:', dailyData); */
-
-  const renderItem = ({ item }) => {
-    let parseDate = item?.createdAt.split('T');
-
-    return (
-      <Pressable style={styles.intakeContainer} onLongPress={() => {
-        setOperationVisible(true);
-        setSelectedData(item);
-      }} >
-        <Text> {item?.amount} {item?.unit} </Text>
-        <Text> {parseDate[1].slice(0, 5)} {parseDate[0]} </Text>
-      </Pressable>
-    );
-  };
 
   // Update - Delete seçimi için açılacak olan alert
   const operationModal = () => {
@@ -156,17 +135,43 @@ const Intakes = ({ intakes, updateIntake, deleteIntake }) => {
     )
   }
 
+  const renderItem = ({ item }) => {
+    let parseDate =  filterType == "daily" && item?.createdAt.split('T')
+
+    /*
+      {parseDate[1].slice(0, 5)} 
+     */
+    return (
+      <Pressable style={styles.intakeContainer} onLongPress={() => {
+        setOperationVisible(true);
+        setSelectedData(item);
+      }} >
+        <Text> {item?.amount} {item?.unit} </Text>
+        {
+          filterType == "daily" ? <Text> / {parseDate[0]} </Text> : <Text> {item?.createdAt} </Text>
+        }
+      </Pressable>
+    );
+  };
+
   return (
-    <Animated.View style={[styles.container, { height: containerHeight }]} {...panResponder.panHandlers}>
-      <View style={styles.line} />
+    <>
+      <Pressable onPress={() => setAddVisible(true)}>
+        <Add width={height / 15} height={height / 15} style={styles.add} />
+      </Pressable>
+    
+      <Animated.View style={[styles.container, { height: containerHeight }]} {...panResponder.panHandlers}>
+        <View style={styles.line} />
 
-      <FlatList data={intakes} renderItem={renderItem} onScroll={handleScroll}/>
+        <FlatList data={data} renderItem={renderItem} onScroll={handleScroll}/>
 
-      {/* Ekstra visible kontrolü yapılmasının sebebi değerler çakışıyor sanırım ve ikinci paket görünmüyor */}
-      { operationVisible ? operationModal() : null}
-      { updateVisible ? updateWater() : null}
-      
-    </Animated.View>
+        {/* Ekstra visible kontrolü yapılmasının sebebi değerler çakışıyor sanırım ve ikinci paket görünmüyor */}
+        { addVisible ? addWater() : null }
+        { operationVisible ? operationModal() : null }
+        { updateVisible ? updateWater() : null }
+        
+      </Animated.View>
+    </>
   );
 };
 
