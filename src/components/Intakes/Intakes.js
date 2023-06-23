@@ -10,8 +10,11 @@ import { groupDataByType } from '../../utils/groupDataByType';
 import { useSelector } from 'react-redux';
 
 import Dialog from "react-native-dialog";
+import ReactNativeModal from 'react-native-modal';
 
 import { Add } from '../../assets/svgs';
+
+import Popup from '../Popup/Popup';
 
 const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
   const [data, setData] = useState([]);
@@ -22,6 +25,8 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
   const [updateVisible, setUpdateVisible] = useState(false);
   const [selectedData, setSelectedData] = useState({});
   const [value, setValue] = useState('');
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
 
   const { filterType } = useSelector(state => state.dataProcess);
 
@@ -41,7 +46,7 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
 
   // Animasyonlu büyüme işlemini gerçekleştirmek için Animated kullanımı
   Animated.timing(containerHeight, {
-    toValue: expanded ? height / 1.2 : height / 2.3,
+    toValue: expanded ? height / 1.2 : height / 2.4,
     duration: 150,
     useNativeDriver: false,
   }).start();
@@ -82,10 +87,15 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
           setAddVisible(false);
           setValue('');
         }} />
-        <Dialog.Button label="Save" onPress={() => {    
+        <Dialog.Button label="Save" onPress={() => {
+          setPopupVisible(true);
+          
+          if(value == "" && value == 0) return setPopupMessage('Please enter the amount of water you drink.');
+
           addIntake(value);
           setAddVisible(false);
           setValue('');
+          setPopupMessage('Intake added successfully.');
         }} />
       </Dialog.Container>
     )
@@ -108,6 +118,8 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
         <Dialog.Button label="Delete" onPress={() => {
           deleteIntake(selectedData?.id);
           setOperationVisible(false);
+          setPopupVisible(true);
+          setPopupMessage('Intake deleted successfully.');
         }} />
       </Dialog.Container>
     )
@@ -129,9 +141,14 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
           setValue('');
         }} />
         <Dialog.Button label="Save" onPress={() => {
+          setPopupVisible(true);
+          
+          if(value == "") return setPopupMessage('Intake updated unsuccessfully.');
+
           updateIntake(selectedData?.id, value);
           setUpdateVisible(false);
           setValue('');
+          setPopupMessage('Intake updated unsuccessfully.');
         }} />
       </Dialog.Container>
     )
@@ -140,7 +157,7 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
   const renderItem = ({ item }) => {
     let newDate = new Date(item?.createdAt);
     let parseTime = newDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    let parseDate = newDate.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    let parseDate = newDate.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).split("/").join(".");
     
     return (
       <Pressable style={styles.intakeContainer} onLongPress={() => {
@@ -149,16 +166,16 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
       }} >
         <Text> {item?.amount} {item?.unit} </Text>
         {
-          filterType == "daily" ? <Text> {`${parseTime} / ${parseDate}`} </Text> : <Text> {item?.createdAt} </Text>
+          filterType == "daily" ? <Text> {`${parseTime} - ${parseDate}`} </Text> : <Text> {item?.createdAt} </Text>
         }
       </Pressable>
     );
   };
 
+
+
   return (
     <>
-      
-    
       <Animated.View style={[styles.container, { height: containerHeight }]} {...panResponder.panHandlers}>
         <View style={styles.line} />
 
@@ -173,6 +190,10 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
         { operationVisible ? operationModal() : null }
         { updateVisible ? updateWater() : null }
         
+        <ReactNativeModal visible={popupVisible}>
+          <Popup visible={popupVisible} closePopup={() => setPopupVisible(false)} message={popupMessage} />
+        </ReactNativeModal>
+
       </Animated.View>
     </>
   );
