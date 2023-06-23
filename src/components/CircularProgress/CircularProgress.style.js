@@ -11,14 +11,15 @@ export default StyleSheet.create({
   },
   circle: {
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingHorizontal: height * 0.01,
   },
   percent: {
     fontSize: 30,
     fontWeight: 'bold'
   },
   info: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600'
   },
   line: {
@@ -33,10 +34,10 @@ export default StyleSheet.create({
     marginHorizontal: height / 15,
   },
   label: {
-    width: height / 12,
+    width: height / 11,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: height / 100
+    marginTop: height / 50
   },
   choose: {
     width: height / 45,
