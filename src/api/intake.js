@@ -23,13 +23,13 @@ const createIntake = async amount => {
   return await client.post('intake/', params);
 };
 
-const updateIntake = async (id, amount) => {
+const updateIntake = async data => {
   const params = {
-    amount: Number(id[1]),
+    amount: Number(data[1]),
     "unit": "ml",
     createdAt: new Date()
   }
-  return await client.put(`intake/${id[0]}`, params);
+  return await client.put(`intake/${data[0]}`, params);
 };
 
 const deleteIntake = async id => {
