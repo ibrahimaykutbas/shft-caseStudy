@@ -5,18 +5,24 @@ import { height } from '../../theme/units';
 import { colors } from '../../theme/colors';
 import styles from './Intakes.style';
 
+import useApi from '../../hooks/useApi';
+import intakeApi from '../../api/intake';
+
 import { groupDataByType } from '../../utils/groupDataByType';
 
 import { useSelector } from 'react-redux';
 
-import Dialog from "react-native-dialog";
 import ReactNativeModal from 'react-native-modal';
 
 import { Add } from '../../assets/svgs';
 
 import Popup from '../Popup/Popup';
+import AddIntake from '../Alerts/AddIntake/AddIntake';
+import UpdateIntake from '../Alerts/UpdateIntake/UpdateIntake';
+import OperationModal from '../Alerts/OperationModal/OperationModal';
+import ActivityIndicator from '../ActivityIndicator/ActivityIndicator';
 
-const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
+const Intakes = ({ intakes, getIntakes, route }) => {
   const [data, setData] = useState([]);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [expanded, setExpanded] = useState(false);
@@ -24,11 +30,14 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
   const [operationVisible, setOperationVisible] = useState(false);
   const [updateVisible, setUpdateVisible] = useState(false);
   const [selectedData, setSelectedData] = useState({});
-  const [value, setValue] = useState('');
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
 
   const { filterType } = useSelector(state => state.dataProcess);
+
+  const addIntakeApi = useApi(intakeApi.createIntake);
+  const updateIntakeApi = useApi(intakeApi.updateIntake);
+  const deleteIntakeApi = useApi(intakeApi.deleteIntake);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -60,99 +69,53 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
     if (scrollOffset > 200) return setExpanded(true);
   }, [scrollOffset]);
 
+
   useEffect(() => {
-    if(intakes.length > 0){
-      const filteredData = groupDataByType(intakes, filterType);
+    const { message } = route?.params || "";
+
+    if (message) setPopupVisible(true), setPopupMessage(message);
+
+
+  },[route]);
+  
+  // APIs
+  const addIntake = async amount => {
+    try {
+      const response = await addIntakeApi.request(amount);
       
-      let sortedIntakes = filteredData?.sort((a, b) => {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
+      if (response.status != 201) return setPopupMessage(true), setPopupMessage('Unexpected error occured');
 
-      setData(sortedIntakes);
-    }
-  },[intakes, filterType])
+      setAddVisible(false);
+      setPopupVisible(true);
+      setPopupMessage('Intake added successfully.');
 
-  // Ekleme işlemini yapacak alert
-  const addWater = () => {
-    return (
-      <Dialog.Container visible={addVisible}>
-        <Dialog.Title>Add Intake</Dialog.Title>
-        <Dialog.Description>
-          Please enter the amount of water you drink.
-        </Dialog.Description>
-
-        <Dialog.Input value={value} onChangeText={text => setValue(text)}  placeholder='250' autoFocus={true} keyboardType='numeric' />
-
-        <Dialog.Button label="Cancel" onPress={() => {
-          setAddVisible(false);
-          setValue('');
-        }} />
-        <Dialog.Button label="Save" onPress={() => {
-          setPopupVisible(true);
-          
-          if(value == "" && value == 0) return setPopupMessage('Please enter the amount of water you drink.');
-
-          addIntake(value);
-          setAddVisible(false);
-          setValue('');
-          setPopupMessage('Intake added successfully.');
-        }} />
-      </Dialog.Container>
-    )
+      getIntakes();
+    } catch (error) {}
   }
 
-  // Update - Delete seçimi için açılacak olan alert
-  const operationModal = () => {
-    return (
-      <Dialog.Container visible={operationVisible}>
-        <Dialog.Title>Edit</Dialog.Title>
-        <Dialog.Description>
-          Select choose
-        </Dialog.Description>
+  const updateIntake = async (id, amount) => {
+    try {
+      const response = await updateIntakeApi.request(id, amount);
+      if (response.status !== 200) return setPopupMessage(true), setPopupMessage('Unexpected error occured');
 
-        <Dialog.Button label="Update" onPress={() => {
-          setOperationVisible(false);
-          setUpdateVisible(true);
-          setValue(selectedData.amount.toString());
-        }} />
-        <Dialog.Button label="Delete" onPress={() => {
-          deleteIntake(selectedData?.id);
-          setOperationVisible(false);
-          setPopupVisible(true);
-          setPopupMessage('Intake deleted successfully.');
-        }} />
-      </Dialog.Container>
-    )
+      setPopupVisible(true);
+      setPopupMessage('Intake updated unsuccessfully.');
+
+      getIntakes();
+    } catch (error) {}
   }
 
-  // Update işlemini yapacak alert
-  const updateWater = () => {
-    return (
-      <Dialog.Container visible={updateVisible}>
-        <Dialog.Title>Update</Dialog.Title>
-        <Dialog.Description>
-          Update the amount of water you drink.
-        </Dialog.Description>
+  const deleteIntake = async id => {
+    try {
+      const response = await deleteIntakeApi.request(id);
+      if (response.status !== 200) return setPopupMessage(true), setPopupMessage('Unexpected error occured');
 
-        <Dialog.Input value={value} onChangeText={text => setValue(text)}  placeholder='250' autoFocus={true} keyboardType='numeric' />
-
-        <Dialog.Button label="Cancel" onPress={() => {
-          setUpdateVisible(false);
-          setValue('');
-        }} />
-        <Dialog.Button label="Save" onPress={() => {
-          setPopupVisible(true);
-          
-          if(value == "") return setPopupMessage('Intake updated unsuccessfully.');
-
-          updateIntake(selectedData?.id, value);
-          setUpdateVisible(false);
-          setValue('');
-          setPopupMessage('Intake updated unsuccessfully.');
-        }} />
-      </Dialog.Container>
-    )
-  }
+      setPopupVisible(true);
+      setPopupMessage('Intake deleted successfully.');
+      
+      getIntakes();
+    } catch (error) {}
+  };
 
   const renderItem = ({ item }) => {
     let newDate = new Date(item?.createdAt);
@@ -172,10 +135,10 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
     );
   };
 
-
-
   return (
     <>
+      <ActivityIndicator visible={addIntakeApi.loading || deleteIntakeApi.loading || updateIntake.loading} />
+
       <Animated.View style={[styles.container, { height: containerHeight }]} {...panResponder.panHandlers}>
         <View style={styles.line} />
 
@@ -183,14 +146,13 @@ const Intakes = ({ intakes, addIntake, updateIntake, deleteIntake }) => {
           <Add width={height / 22} height={height / 22} style={styles.add} fill={colors.WHITE} />
         </Pressable> 
 
-        <FlatList data={data} renderItem={renderItem} onScroll={handleScroll}/>
+        <FlatList data={intakes} renderItem={renderItem} onScroll={handleScroll}/>
 
-        {/* Ekstra visible kontrolü yapılmasının sebebi değerler çakışıyor sanırım ve ikinci paket görünmüyor */}
-        { addVisible ? addWater() : null }
-        { operationVisible ? operationModal() : null }
-        { updateVisible ? updateWater() : null }
+        <AddIntake addIntake={addIntake} isVisible={addVisible} closeAlert={() => setAddVisible(false)} />
+        <UpdateIntake updateIntake={updateIntake} isVisible={updateVisible} closeAlert={() => setUpdateVisible(false)} selectedData={selectedData} />
+        <OperationModal deleteIntake={deleteIntake} isVisible={operationVisible} closeAlert={() => setOperationVisible(false)} selectedData={selectedData} openUpdate={() => setUpdateVisible(true)} />
         
-        <ReactNativeModal visible={popupVisible}>
+        <ReactNativeModal visible={popupVisible} swipeDirection={["left", "up"]} onSwipeComplete={() => setPopupVisible(false)}>
           <Popup visible={popupVisible} closePopup={() => setPopupVisible(false)} message={popupMessage} />
         </ReactNativeModal>
 

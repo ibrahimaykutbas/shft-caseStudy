@@ -8,7 +8,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.WHITE
   },
-  menu: {
+  share: {
     marginTop: height / 70,
     marginRight: height / 50,
     alignSelf: 'flex-end'

@@ -7,7 +7,7 @@ export default StyleSheet.create({
   container: {
     width: width / 1.2,
     height: height / 15,
-    backgroundColor: colors.CORAL,
+    backgroundColor: colors.MINT,
     position: 'absolute',
     top: height / 20,
     zIndex: 9999,
