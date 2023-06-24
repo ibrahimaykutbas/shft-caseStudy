@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  filterType: 'daily'
+  filterType: 'daily',
+  product: {}
 };
 
 const dataProcessSlice = createSlice({
@@ -10,9 +11,12 @@ const dataProcessSlice = createSlice({
   reducers: {
     setFilterType(state, action) {
       state.filterType = action.payload;
+    },
+    setData(state, action) {
+      state.product = action.payload;
     }
   }
 });
 
-export const { setFilterType } = dataProcessSlice.actions;
+export const { setFilterType, setData } = dataProcessSlice.actions;
 export default dataProcessSlice.reducer;
