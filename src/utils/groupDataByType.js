@@ -4,77 +4,99 @@ export const groupDataByType = (intakes, type) => {
   if (type === 'daily') {
     const currentDate = new Date();
 
-    const dailyData = intakes.filter(item => {
-      const itemDate = new Date(item.createdAt);
-      return itemDate.toDateString() === currentDate.toDateString();
-    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const dailyData = intakes
+      .filter(item => {
+        const itemDate = new Date(item.createdAt);
+        return itemDate.toDateString() === currentDate.toDateString();
+      })
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return dailyData;
   } else if (type === 'weekly') {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    const startDayIndex = 1;
+    const currentDayIndex = currentDate.getDay() + 1;
+    const offset = (6 + startDayIndex - currentDayIndex) % 6;
+    const startDate = new Date(currentDate);
+    startDate.setDate(startDate.getDate());  // - offset;
+
     const weeklyData = [];
 
-    const sortedData = intakes.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(currentDate.getDate() - i);
 
-    let currentWeekStartDate = new Date(sortedData[0].createdAt);
-    currentWeekStartDate.setHours(0, 0, 0, 0);
+      const filteredData = intakes.filter(item => {
+        const itemDate = new Date(item.createdAt);
+        itemDate.setHours(0, 0, 0, 0);
+        return itemDate.getTime() === currentDate.getTime();
+      });
 
-    let currentWeekEndDate = new Date(currentWeekStartDate);
-    currentWeekEndDate.setDate(currentWeekEndDate.getDate() + 6);
-
-    let currentWeekTotalAmount = 0;
-
-    sortedData.forEach((item) => {
-      const itemDate = new Date(item.createdAt);
-
-      if (itemDate >= currentWeekStartDate && itemDate <= currentWeekEndDate) {
-        currentWeekTotalAmount += Number(item.amount);
-      } else {
-        const weekData = {
-          amount: currentWeekTotalAmount,
-          createdAt: `${currentWeekStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - ${currentWeekEndDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+      if (filteredData.length > 0) {
+        const totalAmount = filteredData.reduce(
+          (sum, item) => sum + Number(item.amount),
+          0
+        );
+        const data = {
+          createdAt: currentDate.toLocaleDateString(), // Tarihi dizeye dönüştürüyoruz
+          amount: totalAmount,
           unit: 'ml'
         };
-
-        weeklyData.push(weekData);
-
-        currentWeekStartDate = new Date(item.createdAt);
-        currentWeekStartDate.setHours(0, 0, 0, 0);
-
-        currentWeekEndDate = new Date(currentWeekStartDate);
-        currentWeekEndDate.setDate(currentWeekEndDate.getDate() + 6);
-
-        currentWeekTotalAmount = Number(item.amount);
+        weeklyData.push(data);
       }
-    });
-
-    const lastWeekData = {
-      amount: currentWeekTotalAmount,
-      createdAt: `${currentWeekStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - ${currentWeekEndDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
-      unit: 'ml'
-    };
-
-    weeklyData.push(lastWeekData);
+    }
 
     return weeklyData;
   } else if (type === 'monthly') {
-    const monthlyData = {};
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
 
-    intakes.forEach((item) => {
-      const createdAt = new Date(item.createdAt);
-      const monthYear = `${createdAt.toLocaleString('en-US', { month: 'long' })} ${createdAt.getFullYear()}`;
+    const startDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+    const endDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0
+    );
 
-      if (!monthlyData[monthYear]) {
-        monthlyData[monthYear] = {
-          amount: 0,
-          createdAt: monthYear,
+    const monthlyData = [];
+
+    for (let i = startDay.getDate(); i <= endDay.getDate(); i++) {
+      const currentDate = new Date();
+      currentDate.setFullYear(startDay.getFullYear());
+      currentDate.setMonth(startDay.getMonth());
+      currentDate.setDate(i);
+      currentDate.setHours(0, 0, 0, 0);
+
+      const filteredData = intakes.filter(item => {
+        const itemDate = new Date(item.createdAt);
+        itemDate.setHours(0, 0, 0, 0);
+        return (
+          itemDate.getMonth() === currentDate.getMonth() &&
+          itemDate.getDate() === currentDate.getDate()
+        );
+      });
+
+      if (filteredData.length > 0) {
+        const totalAmount = filteredData.reduce(
+          (sum, item) => sum + Number(item.amount),
+          0
+        );
+        const data = {
+          createdAt: currentDate.toLocaleDateString(), // Tarihi dizeye dönüştürüyoruz
+          amount: totalAmount,
           unit: 'ml'
         };
+        monthlyData.push(data);
       }
+    }
 
-      monthlyData[monthYear].amount += Number(item.amount);
-    });
-
-    return Object.values(monthlyData);
+    return monthlyData;
   }
 
   return [];

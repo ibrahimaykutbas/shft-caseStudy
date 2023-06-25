@@ -75,7 +75,6 @@ const Intakes = ({ intakes, getIntakes, route }) => {
 
     if (message) setPopupVisible(true), setPopupMessage(message);
 
-
   },[route]);
   
   // APIs
@@ -90,12 +89,15 @@ const Intakes = ({ intakes, getIntakes, route }) => {
       setPopupMessage('Intake added successfully.');
 
       getIntakes();
-    } catch (error) {}
+    } catch (error) {
+      console.log("ERROR", error);
+    }
   }
 
   const updateIntake = async (id, amount) => {
     try {
       const response = await updateIntakeApi.request(id, amount);
+
       if (response.status !== 200) return setPopupMessage(true), setPopupMessage('Unexpected error occured');
 
       setPopupVisible(true);
@@ -108,6 +110,7 @@ const Intakes = ({ intakes, getIntakes, route }) => {
   const deleteIntake = async id => {
     try {
       const response = await deleteIntakeApi.request(id);
+
       if (response.status !== 200) return setPopupMessage(true), setPopupMessage('Unexpected error occured');
 
       setPopupVisible(true);

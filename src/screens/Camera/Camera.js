@@ -43,11 +43,11 @@ const Camera = () => {
     try {
       if (data.length == 0) return;
 
-      const response = await getBarcodeApi.request("asdasdasd");
+      const response = await getBarcodeApi.request(data);
 
       if (response.data.status == 0) return console.log('Product not found');
 
-      const { product_name, quantity, image_url } = response.data.product;
+      const { product_name, quantity } = response.data.product;
 
       let product = { name: product_name, amount: '' };
 

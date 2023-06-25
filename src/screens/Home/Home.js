@@ -53,11 +53,7 @@ const Home = ({ navigation, route }) => {
       const response = await getIntakesApi.request();
       if (response.status !== 200) return;
 
-  const filteredData = groupDataByType(response?.data, filterType);
-
-     /*  let sortedIntakes = response?.data.sort((a, b) => {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      }); */
+      const filteredData = groupDataByType(response?.data, filterType);
 
       setIntakes(filteredData);
     } catch (error) {
