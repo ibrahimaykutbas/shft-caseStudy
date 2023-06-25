@@ -126,10 +126,14 @@ const Intakes = ({ intakes, getIntakes, route }) => {
     let parseDate = newDate.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).split("/").join(".");
     
     return (
-      <Pressable style={styles.intakeContainer} onLongPress={() => {
-        setOperationVisible(true);
-        setSelectedData(item);
-      }} >
+      <Pressable 
+        style={styles.intakeContainer} 
+        onLongPress={() => {
+          setOperationVisible(true);
+          setSelectedData(item);
+        }}
+        disabled={filterType == "daily" ? false : true}
+      >
         <Text> {item?.amount} {item?.unit} </Text>
         {
           filterType == "daily" ? <Text> {`${parseTime} - ${parseDate}`} </Text> : <Text> {item?.createdAt} </Text>
