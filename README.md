@@ -1,6 +1,6 @@
 # Water Intake
 
-https://github.com/ibrahimaykutbas/shft-caseStudy/assets/80921107/4f752af8-f810-4a0d-a759-6f9068dce738
+https://github.com/ibrahimaykutbas/shft-caseStudy/assets/80921107/9e339929-45eb-48ad-b5ab-c2459d3c476c
 
 ## Teknoloji
 
